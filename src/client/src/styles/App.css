@@ -1,0 +1,349 @@
+/* ============================================
+   BookMyShow — Cinema Ticket Theme
+   Design tokens
+   ============================================ */
+:root {
+    --bg: #0b0c15;
+    --surface: #15141f;
+    --surface-2: #1d1b29;
+    --accent: #e63950;
+    --accent-gold: #f2b705;
+    --text: #f5f3ef;
+    --text-muted: #9691a8;
+    --border: #2c2a3d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    margin: 0;
+}
+
+/* ============================================
+   Page shell
+   ============================================ */
+.app-container {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(230, 57, 80, 0.12), transparent 45%),
+        radial-gradient(circle at 85% 10%, rgba(242, 183, 5, 0.08), transparent 40%),
+        var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding: 32px 24px 60px;
+}
+
+/* Marquee header */
+.app-header {
+    max-width: 1100px;
+    margin: 0 auto 32px;
+    text-align: center;
+}
+
+.app-header .brand-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-header .brand-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 0 8px rgba(242, 183, 5, 0.6));
+}
+
+.app-header h2 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 3rem;
+    letter-spacing: 3px;
+    margin: 0;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px rgba(230, 57, 80, 0.25);
+}
+
+.app-header .tagline {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+/* Film-strip sprocket-hole divider — signature motif */
+.film-strip {
+    max-width: 1100px;
+    margin: 20px auto 0;
+    height: 14px;
+    background-image: radial-gradient(circle, var(--border) 3px, transparent 3.5px);
+    background-size: 22px 14px;
+    background-repeat: repeat-x;
+    background-position: center;
+    opacity: 0.8;
+}
+
+/* ============================================
+   Layout grid
+   ============================================ */
+.content-grid {
+    max-width: 1100px;
+    margin: 32px auto 0;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.main-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+.side-panel-wrap {
+    width: 280px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 820px) {
+    .content-grid {
+        flex-direction: column;
+    }
+    .side-panel-wrap {
+        width: 100%;
+    }
+    .app-header h2 {
+        font-size: 2.1rem;
+    }
+    .book-button button {
+        width: 100%;
+        padding: 12px 0;
+    }
+}
+
+/* Section block label */
+.section-block {
+    margin-bottom: 22px;
+}
+
+.section-block h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+    margin: 0 0 10px 2px;
+}
+
+/* ============================================
+   Rows (cards)
+   ============================================ */
+.movie-row,
+.seat-row,
+.slot-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ============================================
+   Movie / Slot pills
+   ============================================ */
+.movie-column,
+.slot-column {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 10px 18px;
+    line-height: normal;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.movie-column:hover,
+.slot-column:hover {
+    transform: translateY(-2px) scale(1.03);
+    border-color: var(--accent-gold);
+    box-shadow: 0 4px 14px rgba(242, 183, 5, 0.15);
+}
+
+.movie-column:active,
+.slot-column:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* ============================================
+   Seat "ticket stub" cards
+   ============================================ */
+.seat-column {
+    min-width: 92px;
+    text-align: center;
+    padding: 14px 10px 12px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    cursor: default;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.seat-column:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-gold);
+    box-shadow: 0 4px 14px rgba(242, 183, 5, 0.12);
+}
+
+.seat-column .seat-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+/* Selected state — ticket punched / highlighted */
+.movie-column-selected,
+.seat-column-selected,
+.slot-column-selected {
+    background: linear-gradient(135deg, var(--accent), #b9243a);
+    border-color: var(--accent-gold);
+    color: #fff;
+    box-shadow: 0 0 0 2px rgba(242, 183, 5, 0.35), 0 6px 18px rgba(230, 57, 80, 0.35);
+}
+
+.movie-column-selected:hover,
+.slot-column-selected:hover {
+    transform: translateY(-2px) scale(1.03);
+}
+
+.seat-column-selected .seat-label {
+    color: #ffe9c7;
+}
+
+/* ============================================
+   Inputs
+   ============================================ */
+input {
+    width: 56px;
+    padding: 6px 4px;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    color-scheme: white;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 0 3px rgba(242, 183, 5, 0.2);
+    background: var(--surface-2);
+}
+
+/* ============================================
+   Book Now — ticket-shaped button
+   ============================================ */
+.book-button {
+    margin-top: 22px;
+}
+
+.book-button button {
+    text-align: center;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #1a1420;
+    background: linear-gradient(90deg, var(--accent-gold), #ffd873);
+    border: none;
+    padding: 12px 34px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(242, 183, 5, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.book-button button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(242, 183, 5, 0.35);
+}
+
+.book-button button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.book-button button:disabled {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+/* ============================================
+   Last Booking Details — receipt / ticket stub
+   ============================================ */
+.last-order {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.last-order::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-gold));
+}
+
+.last-order h4 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+    margin: 4px 0 14px;
+}
+
+.last-order .ticket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 0.88rem;
+    border-bottom: 1px dashed var(--border);
+    color: var(--text);
+}
+
+.last-order .ticket-row span:first-child {
+    color: var(--text-muted);
+}
+
+.last-order .ticket-empty {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px 0;
+}
