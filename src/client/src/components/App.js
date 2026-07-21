@@ -2,8 +2,29 @@ import React, { useState, useEffect } from "react";
 import '../styles/App.css';
 import '../styles/bootstrap.min.css'
 import { movies, slots, seats } from "./data";
+import MovieSelector from "./MovieSelector";
+import SlotSelector from "./SlotSelector";
+import SeatSelector from "./SeatSelector";
+import LastBooking from "./LastBooking";
+import { getLastBooking, createBooking } from "../utils/api";
+import {
+  saveMovie,
+  saveSlot,
+  saveSeats,
+  loadSelection,
+  clearSelection as clearStoredSelection,
+} from "../utils/storage";
 
-// helper: an empty seats object like {A1: '', A2: '', A3: '', A4: '', D1: '', D2: ''}
+/**
+ * App
+ * -----------------------------------------------------------------------
+ * Top-level component. Owns all booking-related state and business
+ * logic; delegates rendering of each section to a focused child
+ * component (MovieSelector, SlotSelector, SeatSelector, LastBooking).
+ * -----------------------------------------------------------------------
+ */
+
+// Returns a fresh, empty seat-counts object, e.g. { A1: '', A2: '', ... }
 const emptySeats = () => {
   const obj = {};
   seats.forEach((seatType) => { obj[seatType] = ''; });
@@ -19,55 +40,45 @@ const App = () => {
   // On first render: restore any in-progress selection from localStorage,
   // and fetch the last booking from the server (only once, on load).
   useEffect(() => {
-    const savedMovie = localStorage.getItem('movie');
-    const savedSlot = localStorage.getItem('slot');
-    const savedSeats = localStorage.getItem('seats');
+    const saved = loadSelection();
+    if (saved.movie) setSelectedMovie(saved.movie);
+    if (saved.slot) setSelectedSlot(saved.slot);
+    if (saved.seats) setSeatCounts(saved.seats);
 
-    if (savedMovie) setSelectedMovie(savedMovie);
-    if (savedSlot) setSelectedSlot(savedSlot);
-    if (savedSeats) setSeatCounts(JSON.parse(savedSeats));
-
-    fetch('/api/booking')
-      .then((res) => res.json())
+    getLastBooking()
       .then((data) => {
-        if (data.message === 'no previous booking found') {
-          setLastBooking(null);
-        } else {
-          setLastBooking(data);
-        }
+        setLastBooking(data.message === 'no previous booking found' ? null : data);
       })
       .catch((err) => console.log('error fetching last booking', err));
   }, []);
 
   const handleSelectMovie = (movie) => {
     setSelectedMovie(movie);
-    localStorage.setItem('movie', movie);
+    saveMovie(movie);
   };
 
   const handleSelectSlot = (slot) => {
     setSelectedSlot(slot);
-    localStorage.setItem('slot', slot);
+    saveSlot(slot);
   };
 
   const handleSeatChange = (seatType, value) => {
     const updated = { ...seatCounts, [seatType]: value };
     setSeatCounts(updated);
-    localStorage.setItem('seats', JSON.stringify(updated));
+    saveSeats(updated);
   };
 
-  const clearSelection = () => {
+  const resetSelection = () => {
     setSelectedMovie('');
     setSelectedSlot('');
     setSeatCounts(emptySeats());
-    localStorage.removeItem('movie');
-    localStorage.removeItem('slot');
-    localStorage.removeItem('seats');
+    clearStoredSelection();
   };
 
+  // A booking is valid once a movie + slot are picked and at least
+  // one seat type has a count greater than zero.
   const isBookingValid = () => {
-    if (!selectedMovie) return false;
-    if (!selectedSlot) return false;
-    // at least one seat type must have a count > 0
+    if (!selectedMovie || !selectedSlot) return false;
     const totalSeats = Object.values(seatCounts)
       .reduce((sum, val) => sum + (parseInt(val) || 0), 0);
     return totalSeats > 0;
@@ -76,7 +87,7 @@ const App = () => {
   const handleBookNow = async () => {
     if (!isBookingValid()) return;
 
-    // convert seat strings to numbers before sending
+    // Convert seat count strings to numbers before sending to the API.
     const numericSeats = {};
     seats.forEach((seatType) => {
       numericSeats[seatType] = parseInt(seatCounts[seatType]) || 0;
@@ -89,17 +100,13 @@ const App = () => {
     };
 
     try {
-      const res = await fetch('/api/booking', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bookingPayload)
-      });
+      const res = await createBooking(bookingPayload);
 
       if (res.status === 200) {
-        // update "last booking" directly from what we just sent -
-        // no extra GET request needed
+        // Update "last booking" directly from what we just sent -
+        // avoids a redundant GET request, per the assignment spec.
         setLastBooking(bookingPayload);
-        clearSelection();
+        resetSelection();
       }
     } catch (err) {
       console.log('error while booking', err);
@@ -119,102 +126,33 @@ const App = () => {
 
       <div className="content-grid">
         <div className="main-panel">
-
-          {/* Movie selection */}
-          <div className="section-block">
-            <h4>Select A Movie</h4>
-            <div className="movie-row">
-              {movies.map((movie) => (
-                <div
-                  key={movie}
-                  className={
-                    'movie-column' +
-                    (selectedMovie === movie ? ' movie-column-selected' : '')
-                  }
-                  onClick={() => handleSelectMovie(movie)}
-                >
-                  {movie}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Slot selection */}
-          <div className="section-block">
-            <h4>Select a Time slot</h4>
-            <div className="slot-row">
-              {slots.map((slot) => (
-                <div
-                  key={slot}
-                  className={
-                    'slot-column' +
-                    (selectedSlot === slot ? ' slot-column-selected' : '')
-                  }
-                  onClick={() => handleSelectSlot(slot)}
-                >
-                  {slot}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Seat selection */}
-          <div className="section-block">
-            <h4>Select the seats</h4>
-            <div className="seat-row">
-              {seats.map((seatType) => (
-                <div key={seatType} className="seat-column">
-                  <div className="seat-label">Type {seatType}</div>
-                  <input
-                    id={`seat-${seatType}`}
-                    type="number"
-                    min="0"
-                    value={seatCounts[seatType]}
-                    onChange={(e) => handleSeatChange(seatType, e.target.value)}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          <MovieSelector
+            movies={movies}
+            selectedMovie={selectedMovie}
+            onSelect={handleSelectMovie}
+          />
+          <SlotSelector
+            slots={slots}
+            selectedSlot={selectedSlot}
+            onSelect={handleSelectSlot}
+          />
+          <SeatSelector
+            seatTypes={seats}
+            seatCounts={seatCounts}
+            onChange={handleSeatChange}
+          />
 
           <div className="book-button">
             <button disabled={!isBookingValid()} onClick={handleBookNow}>
               Book Now
             </button>
           </div>
-
         </div>
 
-        {/* Last Booking Details */}
-        <div className="side-panel-wrap">
-          <div className="last-order">
-            <h4>Last Booking Details</h4>
-            {lastBooking ? (
-              <div>
-                {seats.map((seatType) => (
-                  <div key={seatType} className="ticket-row">
-                    <span>{seatType}</span>
-                    <span>{lastBooking.seats[seatType]}</span>
-                  </div>
-                ))}
-                <div className="ticket-row">
-                  <span>slot</span>
-                  <span>{lastBooking.slot}</span>
-                </div>
-                <div className="ticket-row">
-                  <span>movie</span>
-                  <span>{lastBooking.movie}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="ticket-empty">no previous booking found</div>
-            )}
-          </div>
-        </div>
+        <LastBooking seatTypes={seats} lastBooking={lastBooking} />
       </div>
     </div>
   );
 }
-
 
 export default App;

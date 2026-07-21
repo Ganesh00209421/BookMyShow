@@ -1,15 +1,27 @@
+/**
+ * index.js — Backend entry point
+ * -----------------------------------------------------------------------
+ * Express server exposing exactly two REST endpoints for the BookMyShow
+ * booking flow:
+ *   POST /api/booking  -> create a new booking
+ *   GET  /api/booking  -> fetch the most recently created booking
+ *
+ * All other endpoints are considered invalid per the assignment spec.
+ * -----------------------------------------------------------------------
+ */
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const port = 8080;
+const port = process.env.PORT || 8080; // deployment platforms (e.g. Vercel, Render) inject PORT
 const path = require('path')
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const { connection } = require("./connector");
 const cors = require('cors')
-app.use(cors())
+app.use(cors()) // allow the frontend (hosted on a different domain in production) to call this API
 
 // 1. Create a new booking
+// Expects body: { movie: string, slot: string, seats: { A1, A2, A3, A4, D1, D2 } }
 app.post("/api/booking", async (req, res) => {
     try {
         const { movie, seats, slot } = req.body;
@@ -20,7 +32,7 @@ app.post("/api/booking", async (req, res) => {
             slot
         });
 
-        await newBooking.save();
+        await newBooking.save(); // persists the booking document to MongoDB
 
         res.status(200).json({ message: "booking successful" });
     } catch (err) {
@@ -53,4 +65,4 @@ app.get("/api/booking", async (req, res) => {
 
 app.listen(port, () => console.log(`App listening on port ${port}!`));
 
-module.exports = app;   
+module.exports = app;

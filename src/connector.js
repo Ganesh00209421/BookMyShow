@@ -1,3 +1,12 @@
+/**
+ * connector.js — MongoDB connection
+ * -----------------------------------------------------------------------
+ * Reads the connection string from the MONGO_URI environment variable
+ * (see .env.example) rather than hardcoding credentials in source
+ * control, and exposes a Mongoose model for the "bookmovietickets"
+ * collection.
+ * -----------------------------------------------------------------------
+ */
 require('dotenv').config();
 const mongodb = require('mongodb');
 
