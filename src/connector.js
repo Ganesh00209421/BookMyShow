@@ -34,5 +34,12 @@ const dbReady = mongoose.connection.readyState === 1
         mongoose.connection.once('error', reject);
     });
 
+// Prevent an "unhandled promise rejection" crash (which some serverless
+// runtimes treat as a fatal process error) if the connection errors out
+// before any request has a chance to await dbReady. Route handlers still
+// get the real rejection when they `await dbReady` inside their own
+// try/catch — this only stops it from being *unhandled*.
+dbReady.catch(() => {});
+
 exports.connection = collection_connection;
 exports.dbReady = dbReady;
