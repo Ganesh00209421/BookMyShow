@@ -23,5 +23,16 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     });
 let collection_connection = mongoose.model('bookmovietickets', bookMovieSchema)
 
+// A promise that resolves once the MongoDB connection is actually open.
+// On serverless platforms (e.g. Vercel), each cold start re-runs this file,
+// and a request can arrive before mongoose.connect() finishes — awaiting
+// this promise in route handlers avoids "buffering timed out" errors.
+const dbReady = mongoose.connection.readyState === 1
+    ? Promise.resolve()
+    : new Promise((resolve, reject) => {
+        mongoose.connection.once('connected', resolve);
+        mongoose.connection.once('error', reject);
+    });
 
 exports.connection = collection_connection;
+exports.dbReady = dbReady;

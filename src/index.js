@@ -16,7 +16,7 @@ const port = process.env.PORT || 8080; // deployment platforms (e.g. Vercel, Ren
 const path = require('path')
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-const { connection } = require("./connector");
+const { connection, dbReady } = require("./connector");
 const cors = require('cors')
 app.use(cors()) // allow the frontend (hosted on a different domain in production) to call this API
 
@@ -24,6 +24,7 @@ app.use(cors()) // allow the frontend (hosted on a different domain in productio
 // Expects body: { movie: string, slot: string, seats: { A1, A2, A3, A4, D1, D2 } }
 app.post("/api/booking", async (req, res) => {
     try {
+        await dbReady; // ensure MongoDB connection is open before querying
         const { movie, seats, slot } = req.body;
 
         const newBooking = new connection({
@@ -44,6 +45,7 @@ app.post("/api/booking", async (req, res) => {
 // 2. Get the last booking made
 app.get("/api/booking", async (req, res) => {
     try {
+        await dbReady; // ensure MongoDB connection is open before querying
         // sort by _id descending -> _id is roughly time-ordered in MongoDB,
         // so the first result is the most recently inserted document
         const lastBooking = await connection.findOne().sort({ _id: -1 });
